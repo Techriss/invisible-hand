@@ -1,0 +1,31 @@
+# gRPC & Protobuf Infrastructure
+grpcio>=1.60.0
+grpcio-tools>=1.60.0
+protobuf>=4.25.0
+
+# AI & LLM Engine
+google-genai>=0.1.0
+pydantic>=2.0.0
+python-dotenv>=1.0.0
+
+# Neural NLP (FinBERT)
+transformers>=4.35.0
+torch>=2.1.0
+
+# Market Data & Quantitative ML
+yfinance>=0.2.35
+scikit-learn>=1.3.0
+pandas>=2.0.0
+pandas-datareader>=0.10.0
+numpy>=1.24.0
+requests>=2.31.0
+lxml>=4.9.0
+feedparser>=6.0.10
+
+# Real-Time Streaming & Networking
+websockets>=12.0
+
+# Caching & Vector Storage
+redis>=5.0.0
+chromadb>=0.4.20
+gnews>=0.3.0

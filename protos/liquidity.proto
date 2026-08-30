@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package market_analyst.liquidity;
+
+option java_multiple_files = true;
+option java_package = "com.marketanalyst.grpc";
+
+message LiquidityRequest {
+    string ticker = 1;
+}
+
+message LiquiditySummary {
+    string asset_class = 1;
+    double liquidity_score = 2;
+    string market_regime = 3;
+}
+
+service MacroLiquidityAnalyzer {
+    rpc SubscribeToLiquidity (LiquidityRequest) returns (stream LiquiditySummary);
+}

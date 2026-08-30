@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package market_analyst.rotation;
+
+option java_multiple_files = true;
+option java_package = "com.marketanalyst.grpc";
+
+
+message ClusterPeer {
+    string ticker = 1;
+    string company_name = 2;
+    double performance_spread = 3; // How much this stock is outperforming/underperforming its peers
+}
+
+message RelativeValueResponse {
+    string target_ticker = 1;
+    string target_name = 2;
+    int32 cluster_id = 3;
+    string theme_name = 4;
+    double cluster_average_return = 5;
+    repeated ClusterPeer outperformers = 6;
+    repeated ClusterPeer laggards = 7;
+}
+
+message ClusterSummary {
+    int32 cluster_id = 1;
+    string theme_name = 2;
+    string description = 3;
+    int32 constituent_count = 4;
+    double average_momentum = 5;
+    repeated string top_tickers = 6;
+}
+
+message ClusterOverviewResponse {
+    repeated ClusterSummary clusters = 1;
+}
+
+message EmptyRequest {}
+
+message TickerRequest {
+    string ticker = 1;
+}
+
+message SectorSubscription {
+    string urgency_level = 1; 
+}
+
+message SectorData {
+    string name = 1;
+    double size = 2;
+    double momentum = 3;
+}
+
+message RotationAlert {
+    repeated SectorData sectors = 1;
+    int64 timestamp = 2;
+}
+
+service SectorRotationMonitor {
+    rpc SubscribeToSector (SectorSubscription) returns (stream RotationAlert);
+    rpc GetMidTermClusters (EmptyRequest) returns (ClusterOverviewResponse);
+    rpc GetRelativeValue (TickerRequest) returns (RelativeValueResponse);
+}

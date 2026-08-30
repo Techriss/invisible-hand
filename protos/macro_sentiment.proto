@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package market_analyst.macro_sentiment;
+
+option java_multiple_files = true;
+option java_package = "com.marketanalyst.grpc";
+
+message MacroRequest {
+    
+}
+
+message MacroReport {
+    string market_stance = 1; // BULLISH, NEUTRAL, or BEARISH
+    repeated string summary_bullets = 2;
+    repeated string sources_cited = 3;
+}
+
+service MacroSentimentAnalyzer {
+    rpc GetGlobalMacro (MacroRequest) returns (MacroReport);
+}

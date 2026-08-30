@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package market_analyst.structural;
+
+option java_multiple_files = true;
+option java_package = "com.marketanalyst.grpc";
+
+message AnalysisRequest {
+    string ticker = 1;
+    int32 time_horizon_months = 2;
+    bool include_supply_chain = 3;
+    bool include_competitor_intel = 4;
+}
+
+message KeyOpportunity {
+    string description = 1;
+    double conviction_score = 2; // 0.0 to 10.0 scale
+    string timeframe = 3;
+}
+
+message RiskFactor {
+    string risk_description = 1;
+    float severity_score = 2;
+    string timestamp = 3;
+}
+
+message AnalysisReport {
+    string ticker = 1;
+    string executive_summary = 2;
+    string bull_case = 3;
+    string bear_case = 4;
+
+    repeated RiskFactor key_risks = 5;
+    repeated KeyOpportunity key_opportunities = 6;
+    
+    repeated string sources_cited = 7;
+
+    double hype_index = 8;
+    double graham_number = 9;
+    double margin_of_safety = 10;
+    double altman_z_score = 11;
+    string altman_z_status = 12;
+}
+
+service StructuralAnalyzer {
+    rpc GenerateDeepReport (AnalysisRequest) returns (AnalysisReport);
+}
