@@ -82,3 +82,8 @@
    ```
 
 4. open http://localhost:3000
+
+
+# Shoutout to 
+  - Benjamin Graham's The Intelligent Investor
+  - Adam Smith's The Wealth of Nations
