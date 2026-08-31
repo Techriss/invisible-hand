@@ -63,7 +63,7 @@
 # Build
 ### Environment Variables
   - [.env.example](https://github.com/Techriss/invisible-hand/blob/main/.env.example)
-  - [.env.local.example (gateway)](https://github.com/Techriss/invisible-hand/blob/main/market-dashboard/.env.local.example)
+  - [.env.local.example (market-dashboard frontend)](https://github.com/Techriss/invisible-hand/blob/main/market-dashboard/.env.local.example)
 ### Requirements
   - [Docker](https://www.docker.com/products/docker-desktop/)
 ### Installation
@@ -74,7 +74,7 @@
    cd invisible-hand
    ```
 
-2. create the .env and gateway/.env.local files with data
+2. create the .env and market-dashboard/.env.local files with data
 3. deploy
 
    ```bash
