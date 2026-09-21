@@ -31,46 +31,44 @@ export default function MacroBanner() {
 
   if (error || !data) {
     return (
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm flex items-center space-x-3 h-32 animate-pulse">
-        <span className="text-slate-500 font-mono text-xs">LOADING MACRO INTELLIGENCE...</span>
+      <div className="bg-black/20 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-8 md:p-10 h-40 shadow-2xl flex items-center justify-center animate-pulse">
+        <span className="font-mono text-[10px] tracking-[0.2em] text-white/50 uppercase">
+          Loading Macro Intelligence...
+        </span>
       </div>
     );
   }
 
   const stanceColor =
     data.marketStance === "BULLISH"
-      ? "bg-emerald-950 text-emerald-400 border-emerald-800"
+      ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/20"
       : data.marketStance === "BEARISH"
-      ? "bg-rose-950 text-rose-400 border-rose-800"
-      : "bg-amber-950 text-amber-400 border-amber-800";
+      ? "bg-rose-500/10 text-rose-300 border-rose-500/20"
+      : "bg-amber-500/10 text-amber-300 border-amber-500/20";
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-sm">
-      <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-        <div className="flex items-center space-x-3">
-          <span className="text-2xl">☕</span>
-          <div>
-            <h2 className="text-base font-bold font-mono text-white">Federal Reserve Intelligence</h2>
-            <p className="text-xs text-slate-400 font-mono">Live FRED API &amp; Policy Analysis</p>
-          </div>
+    <div className="bg-black/20 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-8 md:p-10 space-y-6 shadow-2xl">
+      <div className="flex flex-col md:flex-row items-start md:items-end justify-between border-b border-white/10 pb-6 gap-4">
+        <div>
+          <h2 className="text-2xl font-serif text-white tracking-wide">Federal Reserve Intelligence</h2>
+          <p className="text-[10px] text-white/50 font-mono mt-2 uppercase tracking-[0.1em]">Live FRED API &amp; Policy Analysis</p>
         </div>
-        <span className={`px-3 py-1 rounded-full text-xs font-mono font-bold border ${stanceColor}`}>
+        <span className={`px-3 py-1 rounded-full text-[10px] font-mono font-bold border tracking-widest ${stanceColor}`}>
           {data.marketStance} STANCE
         </span>
       </div>
 
-      <ul className="space-y-2.5 pt-1">
+      <ul className="space-y-4 pt-2">
         {data.summaryBullets.map((bullet, index) => (
-          <li key={index} className="flex items-start space-x-3 text-slate-300 text-sm leading-relaxed">
-            <span className="text-cyan-400 font-bold select-none">•</span>
+          <li key={index} className="flex items-start gap-4 text-white/80 text-sm leading-relaxed font-light">
+            <span className="text-white/30 font-serif pt-1">—</span>
             <span>{bullet}</span>
           </li>
         ))}
       </ul>
 
-      <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-500">
-        <span>Sources: {data.sources?.join(" | ") || "Federal Reserve"}</span>
-        <span className="bg-slate-800 text-slate-400 px-2 py-0.5 rounded text-[10px]">Java gRPC Gateway</span>
+      <div className="pt-6 border-t border-white/5 flex text-[10px] font-mono text-white/40 tracking-widest uppercase">
+        <span>Sources: {data.sources?.join(" | ")}</span>
       </div>
     </div>
   );

@@ -1,14 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Image from "next/image";
 
 type HeaderProps = {
   activeTicker?: string;
   onSelectTicker?: (ticker: string) => void;
 };
 
-const DEFAULT_WATCHLIST = ["SPY", "QQQ", "NVDA", "AAPL", "TSLA"];
+const DEFAULT_WATCHLIST = ["TSLA", "AAPL", "GOOG", "MSFT", "NVDA"];
 
 export default function Header({ activeTicker, onSelectTicker }: HeaderProps) {
   const [gatewayLive, setGatewayLive] = useState(false);
@@ -37,26 +36,18 @@ export default function Header({ activeTicker, onSelectTicker }: HeaderProps) {
     setMounted(true);
     const saved = localStorage.getItem("quantum_watchlist");
     if (saved) {
-      try {
-        setWatchlist(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to parse watchlist from local storage");
-      }
+      try { setWatchlist(JSON.parse(saved)); } catch (e) { console.error(e); }
     }
   }, []);
 
   useEffect(() => {
-    if (mounted) {
-      localStorage.setItem("quantum_watchlist", JSON.stringify(watchlist));
-    }
+    if (mounted) localStorage.setItem("quantum_watchlist", JSON.stringify(watchlist));
   }, [watchlist, mounted]);
 
   const handleAddTicker = (e: React.FormEvent) => {
     e.preventDefault();
     const clean = newTicker.trim().toUpperCase();
-    if (clean && !watchlist.includes(clean)) {
-      setWatchlist([...watchlist, clean]);
-    }
+    if (clean && !watchlist.includes(clean)) setWatchlist([...watchlist, clean]);
     setNewTicker("");
   };
 
@@ -65,88 +56,64 @@ export default function Header({ activeTicker, onSelectTicker }: HeaderProps) {
   };
 
   return (
-    <header className="border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md sticky top-0 z-40 px-6 py-3.5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-      <div className="flex items-center gap-3">
-        <div className="h-10 w-10 relative flex-shrink-0 rounded-full overflow-hidden border border-slate-800 shadow-[0_0_15px_rgba(255,255,255,0.05)]">
-          <Image 
-            src="/logo.png" 
-            alt="Invisible Hand Logo" 
-            fill
-            className="object-cover"
-            priority
-          />
-        </div>
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="font-mono font-bold text-sm text-white tracking-wider uppercase">
-              QUANTUM TERMINAL
-            </h1>
-            <span
-              className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${
-                gatewayLive
-                  ? "text-emerald-400 bg-emerald-950/60 border-emerald-800/80"
-                  : "text-rose-400 bg-rose-950/60 border-rose-800/80"
-              }`}
-            >
-              GATEWAY: 8080 {gatewayLive ? "🟢" : "🔴"}
-            </span>
-          </div>
-          <p className="text-[11px] font-mono text-slate-400">
-            Unsupervised ML &bull; Neural NLP &bull; Factor Regimes
-          </p>
-        </div>
+    <header className="flex flex-col xl:flex-row justify-between items-start xl:items-center py-4 px-2 gap-6 shrink-0 z-40">
+      
+      <div className="flex items-center gap-4 shrink-0 bg-white/5 border border-white/10 px-4 py-2 rounded-full">
+        <span className="text-[10px] font-mono text-white/50 uppercase tracking-[0.2em]">Gateway</span>
+        <div 
+          className={`w-2.5 h-2.5 rounded-full ${
+            gatewayLive 
+              ? "bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.8)]" 
+              : "bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.8)]"
+          }`} 
+        />
       </div>
 
-      <div className="flex items-center gap-2 bg-slate-900/90 border border-slate-800 p-1 rounded-xl">
-        <div className="flex items-center gap-2 px-2 border-r border-slate-800">
-          <span className="text-[10px] font-mono text-slate-500 uppercase">Watchlist:</span>
+      <div className="flex items-center gap-4 bg-black/20 backdrop-blur-md border border-white/10 rounded-full px-5 py-2 shadow-xl w-full xl:w-auto overflow-x-auto no-scrollbar">
+        
+        <div className="flex items-center gap-3 shrink-0 border-r border-white/10 pr-5">
+          <span className="text-[10px] font-mono text-white/50 uppercase tracking-[0.2em]">Watchlist</span>
           <button
             onClick={() => setIsEditing(!isEditing)}
-            className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded transition-colors ${
-              isEditing ? "bg-cyan-500/20 text-cyan-400" : "bg-slate-800 text-slate-400 hover:text-slate-200"
+            className={`text-[10px] font-mono tracking-widest uppercase transition-colors ${
+              isEditing ? "text-cyan-400 font-bold" : "text-white/40 hover:text-white"
             }`}
           >
-            {isEditing ? "DONE" : "EDIT"}
+            {isEditing ? "Done" : "Edit"}
           </button>
         </div>
 
-        <div className="flex items-center gap-1 overflow-x-auto max-w-[50vw] sm:max-w-none no-scrollbar">
-          {mounted && watchlist.map((symbol) => {
-            const isSelected = activeTicker === symbol;
-            return (
-              <div key={symbol} className="relative group flex items-center">
+        <div className="flex items-center gap-2 shrink-0">
+          {mounted && watchlist.map((symbol) => (
+            <div
+              key={symbol}
+              onClick={() => !isEditing && onSelectTicker && onSelectTicker(symbol)}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-mono tracking-widest transition-all ${
+                activeTicker === symbol && !isEditing
+                  ? "bg-white text-black font-bold shadow-[0_0_15px_rgba(255,255,255,0.2)] cursor-pointer"
+                  : "bg-white/5 text-white/60 border border-white/5"
+              } ${!isEditing ? "hover:text-white hover:bg-white/10 cursor-pointer" : ""}`}
+            >
+              <span>{symbol}</span>
+              {isEditing && (
                 <button
-                  onClick={() => !isEditing && onSelectTicker && onSelectTicker(symbol)}
-                  disabled={isEditing}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all ${
-                    isSelected && !isEditing
-                      ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-[0_0_10px_rgba(6,182,212,0.15)]"
-                      : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent"
-                  } ${isEditing ? "opacity-70 cursor-default" : ""}`}
+                  onClick={(e) => { e.stopPropagation(); handleRemoveTicker(symbol); }}
+                  className="bg-rose-500/20 text-rose-300 hover:bg-rose-500/40 hover:text-rose-100 rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold transition-colors ml-1"
                 >
-                  {symbol}
+                  ✕
                 </button>
-                
-                {isEditing && (
-                  <button
-                    onClick={() => handleRemoveTicker(symbol)}
-                    className="absolute -top-1 -right-1 bg-rose-500 text-white rounded-full w-3.5 h-3.5 flex items-center justify-center text-[8px] font-bold shadow-md hover:bg-rose-400 z-10"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-            );
-          })}
+              )}
+            </div>
+          ))}
 
           {mounted && isEditing && (
-            <form onSubmit={handleAddTicker} className="flex items-center ml-1">
+            <form onSubmit={handleAddTicker} className="flex items-center ml-2">
               <input
                 type="text"
                 value={newTicker}
                 onChange={(e) => setNewTicker(e.target.value)}
-                placeholder="ADD..."
-                className="w-16 bg-slate-950 border border-slate-700 focus:border-cyan-500 text-cyan-300 rounded px-2 py-1 text-xs font-mono outline-hidden placeholder:text-slate-600 uppercase"
+                placeholder="+ ADD"
+                className="w-20 bg-white/10 border border-white/20 focus:border-cyan-400 text-cyan-300 rounded-full px-3 py-1.5 text-xs font-mono outline-none placeholder:text-white/40 uppercase transition-colors"
                 maxLength={5}
               />
               <button type="submit" className="hidden">Submit</button>

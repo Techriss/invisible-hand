@@ -2,21 +2,14 @@
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
-import WorkspaceTabs from "@/components/layout/WorkspaceTabs";
+import Sidebar from "@/components/layout/Sidebar";
+import Header from "@/components/layout/Header";
 import MacroBanner from "@/components/banners/MacroBanner";
 import ShortTermLiquidity from "@/components/streams/ShortTermLiquidity";
 import SearchTerminal from "@/components/terminal/SearchTerminal";
-import Header from "@/components/layout/Header";
 
-const SectorHeatmap = dynamic(() => import("@/components/heatmaps/SectorHeatmap"), { 
-  ssr: false,
-  loading: () => <div className="h-96 w-full bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-center shadow-sm animate-pulse"><span className="text-slate-500 font-mono font-bold">LOADING CHART ENGINE...</span></div>
-});
-
-const HiddenSectorHeatmap = dynamic(() => import("@/components/heatmaps/HiddenSectorHeatmap"), { 
-  ssr: false,
-  loading: () => <div className="h-[400px] w-full bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-center shadow-sm animate-pulse"><span className="text-slate-500 font-mono font-bold">LOADING FACTOR MODELS...</span></div>
-});
+const SectorHeatmap = dynamic(() => import("@/components/heatmaps/SectorHeatmap"), { ssr: false });
+const HiddenSectorHeatmap = dynamic(() => import("@/components/heatmaps/HiddenSectorHeatmap"), { ssr: false });
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<"short" | "mid" | "long">("mid");
@@ -28,29 +21,32 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 antialiased selection:bg-cyan-500/20 selection:text-cyan-300">
-      <Header activeTicker={activeTicker} onSelectTicker={handleWatchlistSelect} />
+    <div className="h-screen w-full flex flex-col lg:flex-row p-4 lg:p-6 gap-6 overflow-hidden">
+      
+      <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        <WorkspaceTabs
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          shortTermContent={
-            <>
-              <MacroBanner />
-              <ShortTermLiquidity />
-            </>
-          }
-          midTermContent={
-            <>
-              <HiddenSectorHeatmap />
-              <SectorHeatmap />
-            </>
-          }
-          longTermContent={
-            <SearchTerminal injectedTicker={activeTicker} />
-          }
-        />
+      <main className="flex-1 flex flex-col h-full min-w-0 overflow-y-auto no-scrollbar pb-10">
+        
+        <Header activeTicker={activeTicker} onSelectTicker={handleWatchlistSelect} />
+
+        <div className="flex-1 mt-6 relative">
+          <div className={activeTab === "short" ? "space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 block" : "hidden"}>
+            <MacroBanner />
+            <ShortTermLiquidity />
+          </div>
+
+          <div className={activeTab === "mid" ? "space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 block" : "hidden"}>
+            <HiddenSectorHeatmap />
+            <SectorHeatmap isActive={activeTab === "mid"} />
+          </div>
+
+          <div className={activeTab === "long" ? "space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 block" : "hidden"}>
+            <SearchTerminal 
+              injectedTicker={activeTicker} 
+              onSearch={(searchedTicker) => setActiveTicker(searchedTicker)}
+            />
+          </div>
+        </div>
       </main>
     </div>
   );

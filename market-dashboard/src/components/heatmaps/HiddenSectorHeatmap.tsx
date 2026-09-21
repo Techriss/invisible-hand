@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Treemap, Tooltip, ResponsiveContainer } from "recharts";
+import { getDynamicColor } from "./DynamicHeatmap";
 
 type ClusterSummary = {
   clusterId: number;
@@ -12,57 +13,42 @@ type ClusterSummary = {
   topTickers: string[];
 };
 
-const getDynamicColor = (momentum: number) => {
-  const maxIntensity = 0.25; 
-  const clamped = Math.max(-maxIntensity, Math.min(maxIntensity, momentum));
-  const intensity = Math.abs(clamped) / maxIntensity;
-  
-  if (clamped > 0) {
-    const r = Math.round(148 - (126 * intensity));
-    const g = Math.round(163); 
-    const b = Math.round(184 - (110 * intensity));
-    return `rgb(${r}, ${g}, ${b})`;
-  } else if (clamped < 0) {
-    const r = Math.round(148 + (72 * intensity));
-    const g = Math.round(163 - (125 * intensity));
-    const b = Math.round(184 - (146 * intensity));
-    return `rgb(${r}, ${g}, ${b})`;
-  }
-  return `rgb(148, 163, 184)`;
-};
-
 const CustomizedContent = (props: any) => {
-  const { x, y, width, height, onClick } = props;
+  const { x, y, width, height, onClick, depth } = props;
   
-  const clusterId = props.clusterId ?? 0;
+  if (width <= 0 || height <= 0 || depth === 0) return null;
+
   const rawName = props.themeName ?? props.name ?? "Unknown";
   const momentum = props.averageMomentum ?? props.momentum ?? props.payload?.momentum ?? 0;
-
-  const bgColor = getDynamicColor(momentum);
-  if (width <= 0 || height <= 0) return null;
+  const bgColor = getDynamicColor(momentum, 0.25);
 
   const words = rawName.split(" ");
   const lineCount = words.length;
 
   return (
     <g 
-      onClick={() => onClick && onClick(props.payload || props)}
-      className="cursor-pointer transition-opacity duration-200 hover:opacity-80"
+      onClick={() => {
+        const nodeData = props.payload || props;
+        if (onClick && nodeData && nodeData.themeName) {
+          onClick(nodeData);
+        }
+      }}
+      className="cursor-pointer transition-opacity duration-300 hover:opacity-80"
     >
-      <rect x={x} y={y} width={width} height={height} fill={bgColor} stroke="#0f172a" strokeWidth={2} />
+      <rect 
+        x={x + 2} y={y + 2} 
+        width={Math.max(0, width - 4)} height={Math.max(0, height - 4)} 
+        fill={bgColor} stroke="rgba(255,255,255,0.15)" strokeWidth={1} rx={12} ry={12} 
+      />
       
       {width > 85 && height > 45 && (
         <text 
-          x={x + width / 2} 
-          y={y + height / 2 - ((lineCount - 1) * 6)}
-          textAnchor="middle" 
-          fill="#ffffff" 
-          stroke="none"
-          fontSize={10} 
-          className="font-bold font-sans uppercase tracking-tight drop-shadow-md" 
+          x={x + width / 2} y={y + height / 2 - ((lineCount - 1) * 6)}
+          textAnchor="middle" fill="#ffffff" stroke="none" fontSize={10} 
+          className="font-bold font-mono uppercase tracking-widest drop-shadow-md" 
         >
           {words.map((word: string, index: number) => (
-            <tspan key={index} x={x + width / 2} dy={index === 0 ? 0 : 12}>
+            <tspan key={index} x={x + width / 2} dy={index === 0 ? 0 : 14}>
               {word}
             </tspan>
           ))}
@@ -104,45 +90,48 @@ export default function HiddenSectorHeatmap() {
 
   if (loading) {
     return (
-      <div className="bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-800 text-center font-mono text-sm text-slate-500 animate-pulse h-[500px] flex items-center justify-center">
-        [CALCULATING UNSUPERVISED FACTOR CLUSTERS...]
+      <div className="bg-black/20 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-12 text-center h-[500px] flex items-center justify-center shadow-2xl">
+        <span className="font-mono text-[10px] tracking-[0.2em] text-white/50 uppercase animate-pulse">
+          Calculating Factor Clusters...
+        </span>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-rose-950/40 p-4 rounded-xl border border-rose-800 text-rose-400 font-mono text-xs">
+      <div className="bg-rose-500/10 backdrop-blur-md p-6 rounded-[2rem] border border-rose-500/20 text-rose-300 font-mono text-xs tracking-wide">
         {error}
       </div>
     );
   }
 
   return (
-    <div className="bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-800 space-y-6">
+    <div className="bg-black/20 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-8 md:p-10 space-y-8 shadow-2xl">
       
-      <div className="flex justify-between items-center border-b border-slate-800 pb-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-white/10 pb-6 gap-4">
         <div>
-          <h3 className="text-base font-bold font-mono text-white flex items-center gap-2">
-            <span className="text-cyan-400">◈</span> AI-GENERATED HIDDEN REGIMES
+          <h3 className="text-2xl font-serif text-white tracking-wide">
+            Hidden Market Regimes
           </h3>
-          <p className="text-xs text-slate-400 font-mono mt-0.5">
-            Sized by constituent volume • Colored by 90-day momentum
+          <p className="text-[10px] text-white/50 font-mono mt-2 tracking-[0.1em] uppercase">
+            Unsupervised K-Means Clustering • Colored by Momentum
           </p>
         </div>
-        <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-cyan-950 text-cyan-400 border border-cyan-800">
+        <span className="px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-white/10 text-white border border-white/20 tracking-widest">
           K = {clusters.length} SECTORS
         </span>
       </div>
 
-      <div className="w-full h-[400px]">
+      <div className="w-full h-[450px]">
         <ResponsiveContainer width="100%" height="100%">
           <Treemap
             data={clusters}
             dataKey="constituentCount"
             nameKey="themeName"
             aspectRatio={4 / 3}
-            stroke="#0f172a"
+            fill="transparent"
+            stroke="rgba(0,0,0,0.2)"
             isAnimationActive={false}
             content={(props: any) => <CustomizedContent {...props} onClick={setSelectedCluster} />}
           >
@@ -154,33 +143,31 @@ export default function HiddenSectorHeatmap() {
               labelFormatter={(label: any, payload: any) => {
                   return payload?.[0]?.payload?.themeName || "Cluster";
               }}
-              contentStyle={{ fontFamily: 'monospace', borderRadius: '8px', border: '1px solid #1e293b', backgroundColor: '#020617', color: '#f8fafc' }}
-              itemStyle={{ color: '#22d3ee', fontWeight: 'bold' }}
+              contentStyle={{ fontFamily: 'monospace', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', backgroundColor: 'rgba(0,0,0,0.8)', color: '#fff', backdropFilter: 'blur(10px)' }}
+              itemStyle={{ color: '#34d399', fontWeight: 'bold' }}
             />
           </Treemap>
         </ResponsiveContainer>
       </div>
 
       {selectedCluster && (
-        <div className="bg-slate-950 border border-slate-800 rounded-xl p-5 flex flex-col gap-5">
-          <div className="flex justify-between items-start gap-4 border-b border-slate-800 pb-4">
+        <div className="bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl p-8 flex flex-col gap-6 shadow-2xl">
+          <div className="flex flex-col lg:flex-row justify-between items-start gap-6 border-b border-white/10 pb-6">
             <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-wider bg-cyan-950/60 border border-cyan-900 px-2 py-0.5 rounded">
-                  Regime #{selectedCluster.clusterId}
-                </span>
-                <h4 className="text-base font-bold font-mono text-white">
-                  {selectedCluster.themeName}
-                </h4>
-              </div>
-              <p className="text-sm text-slate-400 leading-relaxed font-sans max-w-4xl mt-2">
+              <span className="text-[10px] font-mono font-bold text-white/50 uppercase tracking-[0.2em] block mb-2">
+                Regime #{selectedCluster.clusterId}
+              </span>
+              <h4 className="text-xl font-serif text-white tracking-wide">
+                {selectedCluster.themeName}
+              </h4>
+              <p className="text-sm text-white/70 font-light leading-relaxed font-sans max-w-4xl mt-3">
                 {selectedCluster.description}
               </p>
             </div>
             
-            <div className="text-right shrink-0">
-                <div className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">Momentum</div>
-                <div className={`text-lg font-mono font-bold ${selectedCluster.averageMomentum >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+            <div className="text-left lg:text-right shrink-0">
+                <div className="text-[10px] font-mono text-white/50 uppercase tracking-[0.2em] mb-1">Momentum</div>
+                <div className={`text-3xl font-serif ${selectedCluster.averageMomentum >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
                     {selectedCluster.averageMomentum >= 0 ? "+" : ""}
                     {(selectedCluster.averageMomentum * 100).toFixed(2)}%
                 </div>
@@ -188,14 +175,14 @@ export default function HiddenSectorHeatmap() {
           </div>
 
           <div>
-            <span className="text-[10px] font-mono uppercase text-slate-500 font-bold block mb-3 tracking-wider">
-              Primary Market Anchors (Top {selectedCluster.topTickers.length} by Dollar Volume)
+             <span className="text-[10px] font-mono uppercase text-white/50 font-bold block mb-4 tracking-[0.2em]">
+              Primary Market Anchors
             </span>
-            <div className="flex flex-wrap gap-2.5">
+            <div className="flex flex-wrap gap-3">
               {selectedCluster.topTickers.map((item, idx) => (
                 <span
                   key={idx}
-                  className="bg-slate-900 border border-slate-700 text-cyan-300 text-xs font-mono font-bold px-3 py-1.5 rounded-md shadow-sm"
+                  className="bg-white/5 border border-white/10 text-white/90 text-[10px] font-mono tracking-wider px-4 py-2 rounded-lg shadow-sm"
                 >
                   {item}
                 </span>
