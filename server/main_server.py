@@ -84,15 +84,36 @@ class MacroLiquidityService(liquidity_pb2_grpc.MacroLiquidityAnalyzerServicer):
         async def listen_to_alpaca():
             try:
                 async with websockets.connect("wss://stream.data.alpaca.markets/v2/iex") as ws:
-                    await ws.recv() 
+                    welcome = await ws.recv()
+                    print(f"[ALPACA] Connected: {welcome}")
+
+                    print("[ALPACA] Sending Auth...")
                     await ws.send(json.dumps({"action": "auth", "key": api_key, "secret": secret_key}))
-                    await ws.recv() 
+                    
+                    auth_response_str = await ws.recv()
+                    auth_response = json.loads(auth_response_str)
+                    print(f"[ALPACA] Auth Response: {auth_response}")
+                    
+                    if not auth_response or auth_response[0].get("T") != "success" or auth_response[0].get("msg") != "authenticated":
+                        print(f"[ALPACA ERROR] Authentication failed! Check your API Keys. Aborting.")
+                        return
+
+                    print(f"[ALPACA] Subscribing to quotes for {request.ticker}...")
                     await ws.send(json.dumps({"action": "subscribe", "quotes": [request.ticker]}))
-                    await ws.recv() 
+                    
+                    sub_response_str = await ws.recv()
+                    sub_response = json.loads(sub_response_str)
+                    print(f"[ALPACA] Subscription Response: {sub_response}")
+
+                    print("[ALPACA] Listening for live ticks...")
                     while True:
-                        await queue.put(await ws.recv())
+                        msg = await ws.recv()
+                        await queue.put(msg)
+                        
+            except websockets.exceptions.ConnectionClosed as e:
+                print(f"[ALPACA] Listener disconnected cleanly: {e}")
             except Exception as e:
-                print(f"Alpaca Listener disconnected: {e}")
+                print(f"[ALPACA ERROR] Fatal socket exception: {e}")
 
         listener_task = asyncio.create_task(listen_to_alpaca())
         last_emission_time = 0.0

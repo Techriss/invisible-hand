@@ -1,15 +1,25 @@
 import time
+import yfinance as yf
 from datetime import datetime, timezone
 from gnews import GNews
 
 def fetch_live_google_news(ticker: str) -> list[dict]:
     """Scrapes Google News and returns structured, database-agnostic news items."""
-    print(f"  -> [GNEWS] Scraping live Google News for {ticker}...")
+    
+    try:
+        company_name = yf.Ticker(ticker).info.get('shortName', ticker)
+        clean_name = company_name.split(' Inc')[0].split(' Corp')[0].split(' Ltd')[0].split(' Company')[0]
+    except Exception:
+        clean_name = ticker
+
+    search_query = f'"{clean_name}" OR {ticker}'
+    print(f"  -> [GNEWS] Scraping live Google News for: {search_query}...")
+    
     results = []
     
     try:
         google_news = GNews(period='14d', max_results=20)
-        news_items = google_news.get_news(f"{ticker} stock")
+        news_items = google_news.get_news(search_query)
         
         for item in news_items:
             title = item.get('title', '')

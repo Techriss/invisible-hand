@@ -1,10 +1,11 @@
 import numpy as np
+import math
 from sklearn.ensemble import IsolationForest
 from collections import deque
 
 WINDOW_SIZE = 1000  # Number of ticks to consider for moving averages and anomaly detection
 MIN_SIZE = 50  # Minimum number of ticks required to calculate metrics
-CONTAMINATION = 0.01  # Proportion of outliers in the data set for Isolation Forest
+CONTAMINATION = 0.001  # Proportion of outliers in the data set for Isolation Forest
 RANDOM_STATE = 42  # Random state for reproducibility in Isolation Forest
 
 class LiquidityTracker:
@@ -32,7 +33,11 @@ class LiquidityTracker:
         avg_volume = sum(self.volume_pipe) / len(self.volume_pipe)
         avg_spread = sum(self.spread_pipe) / len(self.spread_pipe)
 
-        raw_score = (avg_volume / WINDOW_SIZE) * (0.05 / max(avg_spread, 0.01))
+        vol_score = math.log10(avg_volume + 1)
+        
+        spread_multiplier = 0.05 / max(avg_spread, 0.01)
+
+        raw_score = vol_score * spread_multiplier * 1.2
         final_score = min(10.0, max(1.0, raw_score))
 
         X = np.column_stack((self.volume_pipe, self.spread_pipe))
@@ -41,9 +46,8 @@ class LiquidityTracker:
         clf.fit(X)
 
         latest_tick = X[-1].reshape(1, -1)
-        prediction = clf.predict(latest_tick)[0]
-
-        is_anomaly = (prediction == -1)
+        anomaly_score = clf.decision_function(latest_tick)[0]
+        is_anomaly = (anomaly_score < -0.05)
 
         if is_anomaly:
             regime = "⚠️ ANOMALY DETECTED (Spoofing/Dark Pool)"
