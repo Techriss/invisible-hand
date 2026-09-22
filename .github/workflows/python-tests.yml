@@ -33,5 +33,9 @@ jobs:
       - name: Run pytest test suite
         env:
           PYTHONPATH: server
+          GEMINI_API_KEY: "dummy_key_for_github_actions"
+          API_KEY: "dummy_key_for_github_actions"
+          ALPACA_API_KEY: "dummy_key_for_github_actions"
+          ALPACA_SECRET_KEY: "dummy_key_for_github_actions"
         run: |
           pytest server/tests/ -v
