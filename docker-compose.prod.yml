@@ -45,7 +45,7 @@ services:
       context: ./market-dashboard
       dockerfile: Dockerfile
       args:
-        - NEXT_PUBLIC_API_URL=/api
+        - NEXT_PUBLIC_API_URL=
     container_name: nextjs-dashboard
     restart: always
     depends_on:
