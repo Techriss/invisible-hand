@@ -4,7 +4,7 @@ WORKDIR /app
 COPY . .
 
 WORKDIR /app/gateway
-RUN ./mvnw clean package -DskipTests
+RUN sed -i 's/\r$//' ./mvnw && chmod +x ./mvnw && ./mvnw clean package -DskipTests
 
 FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
