@@ -87,3 +87,16 @@
 # Shoutout to 
   - Benjamin Graham's The Intelligent Investor
   - Adam Smith's The Wealth of Nations
+
+# Gallery
+<img width="1917" height="1078" alt="image" src="https://github.com/user-attachments/assets/e1fdc36c-d5ac-4909-86c6-5b9cc12b5262" />
+<img width="1917" height="1078" alt="image" src="https://github.com/user-attachments/assets/f9051ea9-a4ca-4330-8b35-737a095b23f4" />
+<img width="1917" height="1078" alt="image" src="https://github.com/user-attachments/assets/4329eea5-cd83-42dc-8656-e494504292ef" />
+<img width="1917" height="1078" alt="image" src="https://github.com/user-attachments/assets/fe31abc2-63e1-4a61-ae3a-ea4cd9ee9211" />
+<img width="1917" height="1078" alt="image" src="https://github.com/user-attachments/assets/f85f777e-7a57-4c53-9cbc-bebd214ebbfa" />
+<img width="1917" height="1078" alt="image" src="https://github.com/user-attachments/assets/5cbc2d29-28a2-486b-80fe-edd6d2b9508f" />
+<img width="1917" height="1078" alt="image" src="https://github.com/user-attachments/assets/7c8e8fcf-29d2-4b8e-8103-247fe942f17e" />
+
+
+
+
