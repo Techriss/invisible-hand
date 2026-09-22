@@ -1,0 +1,11 @@
+:80 {
+    # Forward all /api and SSE streaming calls to the Java Spring Boot gateway
+    handle /api/* {
+        reverse_proxy java-gateway:8080
+    }
+
+    # Forward all other dashboard traffic to Next.js
+    handle {
+        reverse_proxy dashboard:3000
+    }
+}
