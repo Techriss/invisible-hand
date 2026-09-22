@@ -2,6 +2,9 @@ import time
 from datetime import datetime, timezone
 from config import news_collection
 from data.news_scraper import fetch_live_google_news
+from logger_config import setup_logger
+
+log = setup_logger("data.vector_rag")
 
 def ingest_live_news(ticker: str):
     """Ingests fetched news into the vector database."""
@@ -77,10 +80,10 @@ def get_relevant_news(ticker: str, max_days_old: int = 14, n_results: int = 5) -
         metas = results.get("metadatas", [[]])[0]
 
         if docs:
-            print(f"  -> [VECTOR RAG] Found {len(docs)} recent news items for {ticker} (within {max_days_old} days).")
+            log.info(f"Found {len(docs)} recent news items for {ticker} (within {max_days_old} days).")
             return format_news_for_llm(docs, metas, is_fallback=False)
 
-        print(f"  -> [VECTOR RAG WARNING] No news found within {max_days_old} days for {ticker}. Running historical fallback...")
+        log.warning(f"No news found within {max_days_old} days for {ticker}. Running historical fallback...")
         fallback_results = news_collection.query(
             query_texts=[query_text],
             n_results=n_results,
@@ -91,11 +94,11 @@ def get_relevant_news(ticker: str, max_days_old: int = 14, n_results: int = 5) -
         fallback_metas = fallback_results.get("metadatas", [[]])[0]
 
         if fallback_docs:
-            print(f"  -> [VECTOR RAG] Retrieved {len(fallback_docs)} historical news items for {ticker}.")
+            log.info(f"Retrieved {len(fallback_docs)} historical news items for {ticker}.")
             return format_news_for_llm(fallback_docs, fallback_metas, is_fallback=True)
 
         return f"No news articles or media commentary found in Vector DB for {ticker}."
 
     except Exception as e:
-        print(f"  -> [VECTOR RAG ERROR] Query failed: {e}")
+        log.error(f"Query failed: {e}", exc_info=True)
         return f"Vector Database lookup error for {ticker}."

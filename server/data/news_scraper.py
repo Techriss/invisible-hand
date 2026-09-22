@@ -2,6 +2,9 @@ import time
 import yfinance as yf
 from datetime import datetime, timezone
 from gnews import GNews
+from logger_config import setup_logger
+
+log = setup_logger("data.news_scraper")
 
 def fetch_live_google_news(ticker: str) -> list[dict]:
     """Scrapes Google News and returns structured, database-agnostic news items."""
@@ -13,7 +16,7 @@ def fetch_live_google_news(ticker: str) -> list[dict]:
         clean_name = ticker
 
     search_query = f'"{clean_name}" OR {ticker}'
-    print(f"  -> [GNEWS] Scraping live Google News for: {search_query}...")
+    log.info(f"Scraping live Google News for: {search_query}...")
     
     results = []
     
@@ -40,6 +43,6 @@ def fetch_live_google_news(ticker: str) -> list[dict]:
                 "timestamp": pub_timestamp
             })
     except Exception as e:
-        print(f"  -> [GNEWS ERROR] Failed to fetch live news: {e}")
+        log.error(f"Failed to fetch live news: {e}", exc_info=True)
         
     return results

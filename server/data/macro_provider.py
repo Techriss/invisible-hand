@@ -1,9 +1,12 @@
 import pandas_datareader as pdr
 import feedparser
 from datetime import datetime, timedelta
+from logger_config import setup_logger
+
+log = setup_logger("data.macro_provider")
 
 def get_live_macro_data() -> str:
-    print("  -> [MACRO] Contacting US Federal Reserve Databases (FRED & RSS)...")
+    log.info("Contacting US Federal Reserve Databases (FRED & RSS)...")
     macro_context = []
 
     try:
@@ -22,7 +25,7 @@ def get_live_macro_data() -> str:
         macro_context.append(f"- Latest CPI (Inflation) Index: {latest_cpi:.2f}")
         macro_context.append("")
     except Exception as e:
-        macro_context.append(f"[FRED DATA UNAVAILABLE]: {e}")
+        log.warning(f"[FRED DATA UNAVAILABLE]: {e}")
 
     try:
         feed = feedparser.parse("https://www.federalreserve.gov/feeds/press_all.xml")
@@ -35,6 +38,6 @@ def get_live_macro_data() -> str:
             macro_context.append(f"[{pub_date}] {title}")
             
     except Exception as e:
-        macro_context.append(f"[FED RSS UNAVAILABLE]: {e}")
+        log.warning(f"[FED RSS UNAVAILABLE]: {e}")
 
     return "\n".join(macro_context)

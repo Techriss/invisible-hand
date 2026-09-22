@@ -1,4 +1,7 @@
 import requests
+from logger_config import setup_logger
+
+log = setup_logger("data.sec_edgar")
 
 HEADERS = {
     "User-Agent": "MarketAnalystApp user@marketanalyst.com",
@@ -6,7 +9,7 @@ HEADERS = {
 }
 
 def get_cik_from_ticker(ticker):
-    print(f"  -> [SEC EDGAR] Translating {ticker} to CIK...")
+    log.info(f"Translating {ticker} to CIK...")
     url = "https://www.sec.gov/files/company_tickers.json"
     
     try:
@@ -17,7 +20,7 @@ def get_cik_from_ticker(ticker):
             if company['ticker'].upper() == ticker.upper():
                 return str(company['cik_str']).zfill(10)
     except Exception as e:
-        print(f"  -> [SEC ERROR] Failed to translate ticker: {e}")
+        log.error(f"Failed to translate ticker: {e}", exc_info=True)
         
     return None
 
@@ -27,7 +30,7 @@ def fetch_recent_sec_filings(ticker):
     if not cik:
         return "No SEC data found. This company is likely private or unlisted."
         
-    print(f"  -> [SEC EDGAR] Fetching official filings for CIK {cik}...")
+    log.info(f"Fetching official filings for CIK {cik}...")
     url = f"https://data.sec.gov/submissions/CIK{cik}.json"
     
     try:
@@ -65,4 +68,5 @@ def fetch_recent_sec_filings(ticker):
         return "\n".join(extracted_data)
         
     except Exception as e:
+        log.error(f"SEC EDGAR extraction failed: {e}", exc_info=True)
         return f"SEC EDGAR extraction failed: {e}"

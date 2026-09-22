@@ -2,6 +2,9 @@ import numpy as np
 import math
 from sklearn.ensemble import IsolationForest
 from collections import deque
+from logger_config import setup_logger
+
+log = setup_logger("core.liquidity_analyzer")
 
 WINDOW_SIZE = 1000  # Number of ticks to consider for moving averages and anomaly detection
 MIN_SIZE = 50  # Minimum number of ticks required to calculate metrics
@@ -51,6 +54,7 @@ class LiquidityTracker:
 
         if is_anomaly:
             regime = "⚠️ ANOMALY DETECTED (Spoofing/Dark Pool)"
+            log.warning("Liquidity anomaly triggered on %s: Score=%.2f, AnomalyScore=%.4f", regime, final_score, anomaly_score)
         elif final_score >= 7.0:
             regime = "High Liquidity (Low Slippage Risk)"
         elif final_score >= 4.0:

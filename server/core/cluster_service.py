@@ -4,6 +4,9 @@ from data.market_data import fetch_sp500_universe, fetch_batch_history
 from core.quant_math import optimize_and_cluster
 from core.ai_engine import generate_batch_cluster_labels
 from data.cache_service import get_cached_clusters, set_cached_clusters
+from logger_config import setup_logger
+
+log = setup_logger("core.cluster_service")
 
 class HiddenSectorEngine:
     def __init__(self):
@@ -19,7 +22,7 @@ class HiddenSectorEngine:
 
         cached_data = get_cached_clusters()
         if cached_data:
-            print("\n[ML CLUSTERING] ⚡ Cache Hit! Loading S&P 500 Clusters directly from Redis...")
+            log.info("Redis cache hit for S&P 500 clusters; loading cached cluster data")
             self.cluster_summaries = cached_data["cluster_summaries"]
             self.ticker_to_cluster = cached_data["ticker_to_cluster"]
             self.ticker_returns = cached_data["ticker_returns"]
@@ -93,7 +96,7 @@ class HiddenSectorEngine:
         set_cached_clusters(cache_payload)
         
         self.is_warmed_up = True
-        print("[ML CLUSTERING] Factor Engine Warmed Up and saved to Redis.")
+        log.info("Factor Engine Warmed Up and saved to Redis.")
 
     def get_relative_value(self, ticker: str) -> dict:
         """Calculates mathematical peer divergence for a specific ticker."""

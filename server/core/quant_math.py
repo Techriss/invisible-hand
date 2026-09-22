@@ -2,6 +2,9 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
+from logger_config import setup_logger
+
+log = setup_logger("core.quant_math")
 
 RANDOM_STATE = 42
 MIN_K = 8
@@ -10,7 +13,7 @@ PCA_COMPONENTS = 5
 
 def optimize_and_cluster(returns_df, min_k=MIN_K, max_k=MAX_K) -> tuple:
     """Pure mathematical function to find optimal K-Means clusters via PCA."""
-    print(f"[ML MATH] Optimizing cluster granularity across K={min_k} to K={max_k}...")
+    log.info(f"Optimizing cluster granularity across K={min_k} to K={max_k}...")
     
     scaled_matrix = StandardScaler().fit_transform(returns_df).T
     valid_tickers = returns_df.columns.tolist()
@@ -28,7 +31,7 @@ def optimize_and_cluster(returns_df, min_k=MIN_K, max_k=MAX_K) -> tuple:
             best_score = score
             best_k = k
             
-    print(f"[ML MATH] Optimal market structure: K = {best_k}")
+    log.info(f"Optimal market structure: K = {best_k}")
     final_labels = KMeans(n_clusters=best_k, random_state=RANDOM_STATE, n_init=10).fit_predict(pca_coords)
     
     return best_k, dict(zip(valid_tickers, final_labels.tolist()))

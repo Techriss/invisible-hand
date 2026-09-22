@@ -1,5 +1,8 @@
 import yfinance as yf
 import requests
+from logger_config import setup_logger
+
+log = setup_logger("core.financial_metrics")
 session = requests.Session()
 session.headers.update({
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
@@ -17,7 +20,7 @@ def format_market_cap(value):
     return f"${value:,}"
 
 def get_financial_metrics(ticker: str) -> dict:
-    print(f"  -> [QUANT METRICS] Fetching balance sheet and calculating forensic metrics for {ticker}...")
+    log.info(f"Fetching balance sheet and calculating forensic metrics for {ticker}...")
     
     metrics = {
         "is_private": True,
@@ -38,7 +41,7 @@ def get_financial_metrics(ticker: str) -> dict:
         current_price = info.get("currentPrice") or info.get("regularMarketPrice")
         
         if not current_price:
-            print(f"  -> [FALLBACK] {ticker} lacks standard pricing (likely private).")
+            log.warning(f"{ticker} lacks standard pricing (likely private).")
             return metrics 
             
         metrics["is_private"] = False
@@ -92,9 +95,9 @@ def get_financial_metrics(ticker: str) -> dict:
                     else:
                         metrics["altman_z_status"] = "DISTRESS"
         except Exception as e:
-            print(f"  -> [WARNING] Altman Z-Score calculation skipped: {e}")
+            log.warning(f"Altman Z-Score calculation skipped: {e}")
 
     except Exception as e:
-        print(f"  -> [FALLBACK] Exception caught for {ticker}: {e}")
+        log.error(f"Exception caught for {ticker}: {e}", exc_info=True)
 
     return metrics

@@ -1,21 +1,24 @@
+from cmath import log
 import json
 import os
 import google.genai as genai
 from google.genai import types
 from dotenv import load_dotenv
 
+from logger_config import setup_logger
 from schemas import AnalysisReport, BatchClusterLabels, RiskFactor, KeyOpportunity
 from data.sec_edgar import fetch_recent_sec_filings
 from data.vector_rag import get_relevant_news
 from data.macro_provider import get_live_macro_data
 from core.financial_metrics import get_financial_metrics
 
+log = setup_logger("core.liquidity_analyzer")
 load_dotenv()
 API_KEY = os.getenv("GEMINI_API_KEY")
 client = genai.Client(api_key=API_KEY)
 
 def generate_batch_cluster_labels(clusters_info: list[dict]) -> dict:
-    print(f"  -> [AI ENGINE] Identifying macro themes for {len(clusters_info)} clusters in a single batch...")
+    log.info("Categorizing macro regimes across %d factor clusters via Gemini", len(clusters_info))
     
     prompt = f"""
     You are a Senior Quantitative Factor Strategist. 
@@ -53,12 +56,12 @@ def generate_batch_cluster_labels(clusters_info: list[dict]) -> dict:
             for label in response.parsed.labels
         }
     except Exception as e:
-        print(f"[ERROR] AI Batch Cluster Naming Failed: {e}")
+        log.error("AI batch cluster labeling failed: %s", e, exc_info=True)
         return {}
 
 
 def generate_deep_analysis(ticker: str) -> dict:
-    print(f"\n[AI PIPELINE] Gathering intelligence for: {ticker}")
+    log.info("Generating deep fundamental report for %s", ticker)
     
     sec_data = fetch_recent_sec_filings(ticker)
     retrieved_news = get_relevant_news(ticker)
@@ -107,7 +110,7 @@ def generate_deep_analysis(ticker: str) -> dict:
         )
         parsed_report = response.parsed 
     except Exception as e:
-        print(f"[ERROR] Deep Analysis Generation Failed: {e}")
+        log.error("Deep analysis generation failed for %s: %s", ticker, e, exc_info=True)
         parsed_report = AnalysisReport(
             bull_case="AI Generation temporarily unavailable due to API timeout.",
             bear_case="AI Generation temporarily unavailable due to API timeout.",
@@ -135,8 +138,7 @@ def generate_deep_analysis(ticker: str) -> dict:
     }
 
 def generate_macro_sentiment() -> dict:
-    print("\n[MACRO] Generating Global Macroeconomic Intelligence...")
-    
+    log.info("Synthesizing live Federal Reserve macro data via Gemini")
     live_fed_data = get_live_macro_data()
     
     prompt = f"""
@@ -173,7 +175,7 @@ def generate_macro_sentiment() -> dict:
         )
         parsed = json.loads(response.text)
     except Exception as e:
-        print(f"[ERROR] Macro Sentiment Generation Failed: {e}")
+        log.error("Macro sentiment generation failed: %s", e, exc_info=True)
         parsed = {
             "market_stance": "NEUTRAL",
             "bullets": ["Federal Reserve data parsing failed due to AI API timeout.", "Awaiting system recovery."]
